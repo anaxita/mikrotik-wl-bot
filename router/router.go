@@ -1,4 +1,4 @@
-package main
+package router
 
 import (
 	"errors"
@@ -7,15 +7,22 @@ import (
 	"net"
 )
 
-type RouterController struct {
+type Router struct {
+	routerAddr     string
+	routerLogin    string
+	routerPassword string
 }
 
-func NewRouterController() *RouterController {
-	return &RouterController{}
+func NewRouter(routerAddr, routerLogin, routerPassword string) *Router {
+	return &Router{
+		routerAddr:     routerAddr,
+		routerLogin:    routerLogin,
+		routerPassword: routerPassword,
+	}
 }
 
-func (rc *RouterController) AddIP(ip net.IP) error {
-	conn, err := routeros.Dial(routerAddr, routerLogin, routerPassword)
+func (rc *Router) AddIP(ip net.IP) error {
+	conn, err := rc.dial()
 	if err != nil {
 		return err
 	}
@@ -29,8 +36,8 @@ func (rc *RouterController) AddIP(ip net.IP) error {
 	return nil
 }
 
-func (rc *RouterController) RemoveIP(ip net.IP) error {
-	conn, err := routeros.Dial(routerAddr, routerLogin, routerPassword)
+func (rc *Router) RemoveIP(ip net.IP) error {
+	conn, err := rc.dial()
 	if err != nil {
 		return err
 	}
@@ -57,4 +64,8 @@ func (rc *RouterController) RemoveIP(ip net.IP) error {
 
 	return nil
 
+}
+
+func (rc *Router) dial() (*routeros.Client, error) {
+	return routeros.Dial(rc.routerAddr, rc.routerLogin, rc.routerPassword)
 }
