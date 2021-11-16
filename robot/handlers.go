@@ -6,7 +6,7 @@ import (
 )
 
 func (b *Robot) helpCommandHandler(_ *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "/start /help /add_ip /remove_ip")
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "/start\n/help\n/add_ip\n/remove_ip")
 }
 
 func (b *Robot) removeIPCommandHandler(user *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {

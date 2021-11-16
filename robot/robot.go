@@ -15,6 +15,10 @@ const (
 	statusAddIP
 	statusRemoveIP
 )
+const (
+	roleUser = iota
+	roleAdmin
+)
 
 const (
 	commandStart    = "start"
@@ -49,10 +53,7 @@ func (b *Robot) handleCommands(update tgbotapi.Update) {
 	var chatID = update.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
 
-	user, ok := b.store.Users[chatID]
-	if !ok {
-		user = b.addUser(update)
-	}
+	user := b.store.Users[chatID]
 
 	user.LastMessageID = update.Message.MessageID
 
@@ -79,10 +80,7 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 	var chatID = update.Message.Chat.ID
 	var text = update.Message.Text
 
-	user, ok := b.store.Users[chatID]
-	if !ok {
-		user = b.addUser(update)
-	}
+	user := b.store.Users[chatID]
 
 	switch user.Status {
 	case statusStart:
@@ -123,6 +121,52 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 	}
 }
 
+func (b *Robot) addUser(update tgbotapi.Update) *storage.User {
+	user := &storage.User{
+		ID:            update.Message.From.ID,
+		Username:      update.Message.From.UserName,
+		LastMessageID: update.Message.MessageID,
+		Status:        statusDefault,
+		Role:          b.roleByUsername(update.Message.From.UserName),
+	}
+
+	b.mux.Lock()
+	defer b.mux.Unlock()
+
+	b.store.Users[update.Message.Chat.ID] = user
+
+	return user
+}
+
+func (b *Robot) roleByUsername(userName string) int {
+	for _, name := range b.store.Admins {
+		if name == userName {
+			return roleAdmin
+		}
+	}
+	return roleUser
+}
+
+func (b *Robot) isChatAllow(chatID int64) bool {
+	for _, id := range b.store.AllowChatIDs {
+		if id == chatID {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (b *Robot) isAdmin(username string) bool {
+	for _, admin := range b.store.Admins {
+		if username == admin {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (b *Robot) Start() {
 	b.api.Debug = true
 	updateConfig := tgbotapi.NewUpdate(0)
@@ -130,6 +174,21 @@ func (b *Robot) Start() {
 	updates := b.api.GetUpdatesChan(updateConfig)
 
 	for update := range updates {
+		chatID := update.Message.Chat.ID
+
+		if !b.isChatAllow(chatID) && !b.isAdmin(update.Message.From.UserName) {
+			_, err := b.api.Send(tgbotapi.NewMessage(chatID, "You have permission. Write to https://t.me/Mishagl to get it"))
+			if err != nil {
+				log.Println("Can't send a message: ", err)
+			}
+			continue
+		}
+
+		_, ok := b.store.Users[chatID]
+		if !ok {
+			b.addUser(update)
+		}
+
 		if update.Message == nil {
 			continue
 		}
@@ -141,20 +200,4 @@ func (b *Robot) Start() {
 
 		b.handleMessages(update)
 	}
-}
-
-func (b *Robot) addUser(update tgbotapi.Update) *storage.User {
-	user := &storage.User{
-		ID:            update.Message.From.ID,
-		Username:      update.Message.From.UserName,
-		LastMessageID: update.Message.MessageID,
-		Status:        statusDefault,
-	}
-
-	b.mux.Lock()
-	defer b.mux.Unlock()
-
-	b.store.Users[update.Message.Chat.ID] = user
-
-	return user
 }
