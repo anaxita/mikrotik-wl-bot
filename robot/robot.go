@@ -151,6 +151,9 @@ func (b *Robot) addUser(update tgbotapi.Update) *storage.User {
 		Status:        statusDefault,
 	}
 
+	b.mux.Lock()
+	defer b.mux.Unlock()
+
 	b.store.Users[update.Message.Chat.ID] = user
 
 	return user
