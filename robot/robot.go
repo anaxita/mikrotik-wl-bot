@@ -14,6 +14,8 @@ const (
 	statusStart
 	statusAddIP
 	statusRemoveIP
+	statusAddAdmin
+	statusRemoveAdmin
 )
 const (
 	roleUser = iota
@@ -21,10 +23,17 @@ const (
 )
 
 const (
-	commandStart    = "start"
-	commandHelp     = "help"
-	commandAddIP    = "add_ip"
-	commandRemoveIP = "remove_ip"
+	commandStart       = "start"
+	commandHelp        = "help"
+	commandAddIP       = "add_ip"
+	commandRemoveIP    = "remove_ip"
+	commandAddAdmin    = "add_admin"
+	commandRemoveAdmin = "remove_admin"
+	commandShowAdmins  = "show_admins"
+)
+
+const (
+	answerSuccess = "success"
 )
 
 type Robot struct {
@@ -59,13 +68,19 @@ func (b *Robot) handleCommands(update tgbotapi.Update) {
 
 	switch update.Message.Command() {
 	case commandStart:
-		msg = b.handleStartCommand(user, &update)
+		msg = b.startCommandHandler(user, &update)
 	case commandHelp:
 		msg = b.helpCommandHandler(user, &update)
 	case commandRemoveIP:
 		msg = b.removeIPCommandHandler(user, &update)
 	case commandAddIP:
 		msg = b.addIPCommandHandler(user, &update)
+	case commandShowAdmins:
+		msg = b.ShowAdmins(user, &update)
+	case commandAddAdmin:
+		msg = b.addAdminCommandHandler(user, &update)
+	case commandRemoveAdmin:
+		msg = b.removeAdminCommandHandler(user, &update)
 	default:
 		msg = tgbotapi.NewMessage(chatID, "Unknown command. Send /start to begin")
 	}
@@ -76,45 +91,51 @@ func (b *Robot) handleCommands(update tgbotapi.Update) {
 }
 
 func (b *Robot) handleMessages(update tgbotapi.Update) {
-	var msg tgbotapi.MessageConfig
 	var chatID = update.Message.Chat.ID
 	var text = update.Message.Text
+	var msgText = answerSuccess // default
 
 	user := b.store.Users[chatID]
 
 	switch user.Status {
 	case statusStart:
-		msg = tgbotapi.NewMessage(chatID, "Please select a command and click on it")
+		msgText = "Please select a command and click on it"
 	case statusRemoveIP:
 		ip := net.ParseIP(text)
 		if ip == nil {
-			msg = tgbotapi.NewMessage(chatID, "Incorrect IP addresb. It should be XXX.XXX.XXX.XXX. Try again.")
-		} else {
-			err := b.router.RemoveIP(ip)
-			if err != nil {
-				msg = tgbotapi.NewMessage(chatID, err.Error())
-			} else {
-				msg = tgbotapi.NewMessage(chatID, "Success.")
-			}
-			user.Status = statusStart
+			msgText = "Incorrect IP address. It should be XXX.XXX.XXX.XXX. Try again."
+
+			break
 		}
+
+		err := b.router.RemoveIP(ip)
+		if err != nil {
+			msgText = err.Error()
+		}
+		user.Status = statusStart
 	case statusAddIP:
 		ip := net.ParseIP(text)
 		if ip == nil {
-			msg = tgbotapi.NewMessage(chatID, "Incorrect IP addresb. It should be XXX.XXX.XXX.XXX. Try again.")
+			msgText = "Incorrect IP address. It should be XXX.XXX.XXX.XXX. Try again."
 		} else {
-			err := b.router.AddIP(ip)
+			chatTitle := update.Message.Chat.Title
+
+			err := b.router.AddIP(ip, chatTitle)
 			if err != nil {
-				msg = tgbotapi.NewMessage(chatID, err.Error())
-			} else {
-				msg = tgbotapi.NewMessage(chatID, "Success.")
+				msgText = err.Error()
 			}
 
 			user.Status = statusStart
 		}
+	case statusAddAdmin:
+		b.store.AddAdmin(text)
+	case statusRemoveAdmin:
+		b.store.RemoveAdmin(text)
 	default:
-		msg = tgbotapi.NewMessage(chatID, "Send /start to begin")
+		msgText = "Send /start to begin"
 	}
+
+	msg := tgbotapi.NewMessage(chatID, msgText)
 
 	if _, err := b.api.Send(msg); err != nil {
 		log.Println("send a message:", err)
@@ -138,35 +159,6 @@ func (b *Robot) addUser(update tgbotapi.Update) *storage.User {
 	return user
 }
 
-func (b *Robot) roleByUsername(userName string) int {
-	for _, name := range b.store.Admins {
-		if name == userName {
-			return roleAdmin
-		}
-	}
-	return roleUser
-}
-
-func (b *Robot) isChatAllow(chatID int64) bool {
-	for _, id := range b.store.AllowChatIDs {
-		if id == chatID {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (b *Robot) isAdmin(username string) bool {
-	for _, admin := range b.store.Admins {
-		if username == admin {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (b *Robot) Start() {
 	b.api.Debug = true
 	updateConfig := tgbotapi.NewUpdate(0)
@@ -174,10 +166,15 @@ func (b *Robot) Start() {
 	updates := b.api.GetUpdatesChan(updateConfig)
 
 	for update := range updates {
+		if update.Message == nil {
+			continue
+		}
+
 		chatID := update.Message.Chat.ID
 
 		if !b.isChatAllow(chatID) && !b.isAdmin(update.Message.From.UserName) {
-			_, err := b.api.Send(tgbotapi.NewMessage(chatID, "You have permission. Write to https://t.me/Mishagl to get it"))
+			msg := tgbotapi.NewMessage(chatID, "You have no permissions. Write to https://t.me/Mishagl to get it")
+			_, err := b.api.Send(msg)
 			if err != nil {
 				log.Println("Can't send a message: ", err)
 			}
@@ -189,15 +186,12 @@ func (b *Robot) Start() {
 			b.addUser(update)
 		}
 
-		if update.Message == nil {
-			continue
-		}
-
 		if update.Message.IsCommand() {
 			b.handleCommands(update)
 			continue
 		}
 
 		b.handleMessages(update)
+
 	}
 }

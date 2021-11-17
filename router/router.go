@@ -21,14 +21,14 @@ func NewRouter(routerAddr, routerLogin, routerPassword string) *Router {
 	}
 }
 
-func (rc *Router) AddIP(ip net.IP) error {
+func (rc *Router) AddIP(ip net.IP, comment string) error {
 	conn, err := rc.dial()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	_, err = conn.Run("/ip/firewall/address-list/add", "=list=WL", "=address="+ip.String())
+	_, err = conn.Run("/ip/firewall/address-list/add", "=list=WL", "=address="+ip.String(), "=comment="+comment)
 	if err != nil {
 		return err
 	}
