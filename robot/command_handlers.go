@@ -73,7 +73,6 @@ func (b *Robot) showDynamicLinkCommandHandler(_ *storage.User, update *tgbotapi.
 	log.Println(b.dynamicWL)
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
-	msg.ParseMode = tgbotapi.ModeMarkdownV2
 
 	return msg
 }
