@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/anaxita/mikrotik-wl-bot/storage"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"log"
 )
 
 func (b *Robot) helpCommandHandler(_ *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
@@ -68,8 +69,8 @@ func (b *Robot) ShowAdmins(_ *storage.User, update *tgbotapi.Update) tgbotapi.Me
 }
 
 func (b *Robot) showDynamicLinkCommandHandler(_ *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
-	msgText := fmt.Sprintf(`На **компьютере**, с которого нужно подключиться, перейдите по [ССЫЛКЕ](%s).
-\n\nОткроется окно в браузере и вы увидите ваш IP, после этого можете подключаться к серверу.`, b.dynamicWL)
+	msgText := fmt.Sprintf("*На компьютере, с которого нужно подключиться*, перейдите по [ССЫЛКЕ](%s)\n\nОткроется окно в браузере и вы увидите ваш IP, после этого можете подключаться к серверу", b.dynamicWL)
+	log.Println(b.dynamicWL)
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
 	msg.ParseMode = tgbotapi.ModeMarkdownV2
