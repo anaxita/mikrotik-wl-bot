@@ -125,24 +125,25 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 		ip := net.ParseIP(text)
 		if ip == nil {
 			msgText = "Некорректный IP. Введите адрес в формате 127.0.0.1."
-		} else {
-			chatTitle := update.Message.Chat.Title
-			firstName := update.Message.From.FirstName
-			lastName := update.Message.From.LastName
 
-			comment := fmt.Sprintf("BOT %s | %s %s", chatTitle, firstName, lastName)
-			err := b.router.AddIP(ip, comment)
-			if err != nil {
-				msgText = err.Error()
-			}
-
-			err = b.sendNotification(fmt.Sprintf("Чат: %s\nПользователь: %s %s\nДействие: Добавил IP %s", chatTitle, firstName, lastName, ip))
-			if err != nil {
-				log.Println("Send notification error:", err)
-			}
-
-			user.Status = statusStart
+			break
 		}
+		chatTitle := update.Message.Chat.Title
+		firstName := update.Message.From.FirstName
+		lastName := update.Message.From.LastName
+
+		comment := fmt.Sprintf("BOT %s | %s %s", chatTitle, firstName, lastName)
+		err := b.router.AddIP(ip, comment)
+		if err != nil {
+			msgText = err.Error()
+		}
+
+		err = b.sendNotification(fmt.Sprintf("Чат: %s\nПользователь: %s %s\nДействие: Добавил IP %s", chatTitle, firstName, lastName, ip))
+		if err != nil {
+			log.Println("Send notification error:", err)
+		}
+
+		user.Status = statusStart
 	case statusAddAdmin:
 		b.store.AddAdmin(text)
 		user.Status = statusStart
