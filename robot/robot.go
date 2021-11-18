@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/anaxita/mikrotik-wl-bot/router"
 	"github.com/anaxita/mikrotik-wl-bot/storage"
+	"github.com/anaxita/mikrotik-wl-bot/translit"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"net"
@@ -134,7 +135,7 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 		lastName := update.Message.From.LastName
 
 		comment := fmt.Sprintf("BOT %s | %s %s", chatTitle, firstName, lastName)
-		err := b.router.AddIP(ip, comment)
+		err := b.router.AddIP(ip, translit.Translit(comment))
 		if err != nil {
 			msgText = err.Error()
 
