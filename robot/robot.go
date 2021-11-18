@@ -36,7 +36,7 @@ const (
 )
 
 const (
-	answerSuccess = "success"
+	answerSuccess = "Команда выполнена успешно"
 )
 
 type Robot struct {
