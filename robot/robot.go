@@ -130,7 +130,7 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 			firstName := update.Message.From.FirstName
 			lastName := update.Message.From.LastName
 
-			comment := fmt.Sprintf("%s | %s %s", chatTitle, firstName, lastName)
+			comment := fmt.Sprintf("BOT %s | %s %s", chatTitle, firstName, lastName)
 			err := b.router.AddIP(ip, comment)
 			if err != nil {
 				msgText = err.Error()
