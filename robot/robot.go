@@ -85,7 +85,7 @@ func (b *Robot) handleCommands(update tgbotapi.Update) {
 	case commandRemoveAdmin:
 		msg = b.removeAdminCommandHandler(user, &update)
 	case commandShowDynamicLink:
-		msg = b.removeAdminCommandHandler(user, &update)
+		msg = b.showDynamicLinkCommandHandler(user, &update)
 	default:
 		msg = tgbotapi.NewMessage(chatID, "Unknown command. Send /help to see all allow commands")
 	}

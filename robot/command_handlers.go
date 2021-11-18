@@ -13,13 +13,13 @@ func (b *Robot) helpCommandHandler(_ *storage.User, update *tgbotapi.Update) tgb
 func (b *Robot) removeIPCommandHandler(user *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
 	user.Status = statusRemoveIP
 
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter ip in 192.168.1.25 format")
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "Введите IP адрес в формате `192.168.1.25`")
 }
 
 func (b *Robot) addIPCommandHandler(user *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
 	user.Status = statusAddIP
 
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter ip in 192.168.1.25 format")
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "Введите IP адрес в формате `192.168.1.25`")
 }
 
 func (b *Robot) startCommandHandler(user *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
@@ -38,7 +38,7 @@ func (b *Robot) startCommandHandler(user *storage.User, update *tgbotapi.Update)
 		),
 	)
 
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Select a command")
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите команду на клавиатуре.")
 	msg.ReplyMarkup = numericKeyboard
 
 	return msg
