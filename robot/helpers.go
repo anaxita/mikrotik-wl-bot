@@ -37,7 +37,6 @@ func (b *Robot) isAdmin(username string) bool {
 
 func (b *Robot) sendNotification(text string) error {
 	msg := tgbotapi.NewMessage(storage.KmsMailChatID, text)
-	msg.ParseMode = tgbotapi.ModeMarkdownV2
 
 	_, err := b.api.Send(msg)
 
