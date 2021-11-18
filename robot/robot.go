@@ -128,6 +128,7 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 
 			break
 		}
+
 		chatTitle := update.Message.Chat.Title
 		firstName := update.Message.From.FirstName
 		lastName := update.Message.From.LastName
