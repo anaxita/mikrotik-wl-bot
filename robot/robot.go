@@ -131,6 +131,10 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 		}
 
 		chatTitle := update.Message.Chat.Title
+		if chatTitle == "" {
+			chatTitle = "Личные сообщения"
+		}
+
 		firstName := update.Message.From.FirstName
 		lastName := update.Message.From.LastName
 
