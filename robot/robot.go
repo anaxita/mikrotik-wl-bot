@@ -136,6 +136,8 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 		err := b.router.AddIP(ip, comment)
 		if err != nil {
 			msgText = err.Error()
+
+			break
 		}
 
 		err = b.sendNotification(fmt.Sprintf("Чат: %s\nПользователь: %s %s\nДействие: Добавил IP %s", chatTitle, firstName, lastName, ip))
