@@ -100,9 +100,18 @@ func (b *Robot) handleCommands(update tgbotapi.Update) {
 }
 
 func (b *Robot) handleMessages(update tgbotapi.Update) {
-	var chatID = update.Message.Chat.ID
-	var text = update.Message.Text
-	var msgText = answerSuccess // default
+	var (
+		chatID    = update.Message.Chat.ID
+		chatTitle = update.Message.Chat.Title
+		firstName = update.Message.From.FirstName
+		lastName  = update.Message.From.LastName
+		text      = update.Message.Text
+		msgText   = answerSuccess // default
+	)
+
+	if chatTitle == "" {
+		chatTitle = "Личные сообщения"
+	}
 
 	user := b.store.Users[chatID]
 
@@ -120,7 +129,15 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 		err := b.router.RemoveIP(ip)
 		if err != nil {
 			msgText = err.Error()
+
+			break
 		}
+
+		err = b.sendNotification(fmt.Sprintf("Chat: %s\nUser: %s %s\nAction: Удалил IP %s", chatTitle, firstName, lastName, ip))
+		if err != nil {
+			log.Println("Send notification error:", err)
+		}
+
 		user.Status = statusStart
 	case statusAddIP:
 		ip := net.ParseIP(text)
@@ -130,14 +147,6 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 			break
 		}
 
-		chatTitle := update.Message.Chat.Title
-		if chatTitle == "" {
-			chatTitle = "Личные сообщения"
-		}
-
-		firstName := update.Message.From.FirstName
-		lastName := update.Message.From.LastName
-
 		comment := fmt.Sprintf("BOT %s | %s %s", chatTitle, firstName, lastName)
 		err := b.router.AddIP(ip, translit.Translit(comment))
 		if err != nil {
@@ -146,7 +155,7 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 			break
 		}
 
-		err = b.sendNotification(fmt.Sprintf("Чат: %s\nПользователь: %s %s\nДействие: Добавил IP %s", chatTitle, firstName, lastName, ip))
+		err = b.sendNotification(fmt.Sprintf("Chat: %s\nUser: %s %s\nAction: Удалил IP %s", chatTitle, firstName, lastName, ip))
 		if err != nil {
 			log.Println("Send notification error:", err)
 		}
