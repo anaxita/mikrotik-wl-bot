@@ -127,9 +127,10 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 			msgText = "Некорректный IP. Введите адрес в формате 127.0.0.1."
 		} else {
 			chatTitle := update.Message.Chat.Title
-			username := update.Message.From.String()
+			firstName := update.Message.From.FirstName
+			lastName := update.Message.From.LastName
 
-			comment := fmt.Sprintf("%s %s", chatTitle, username)
+			comment := fmt.Sprintf("%s | %s %s", chatTitle, firstName, lastName)
 			err := b.router.AddIP(ip, comment)
 			if err != nil {
 				msgText = err.Error()
