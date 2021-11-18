@@ -1,6 +1,7 @@
 package robot
 
 import (
+	"fmt"
 	"github.com/anaxita/mikrotik-wl-bot/router"
 	"github.com/anaxita/mikrotik-wl-bot/storage"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -126,8 +127,10 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 			msgText = "Некорректный IP. Введите адрес в формате 127.0.0.1."
 		} else {
 			chatTitle := update.Message.Chat.Title
+			username := update.Message.From.String()
 
-			err := b.router.AddIP(ip, chatTitle)
+			comment := fmt.Sprintf("%s %s", chatTitle, username)
+			err := b.router.AddIP(ip, comment)
 			if err != nil {
 				msgText = err.Error()
 			}
