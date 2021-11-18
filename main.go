@@ -18,7 +18,7 @@ func main() {
 
 	store := storage.NewStorage()
 
-	bot, err := robot.NewBot(config["BOT_TOKEN"], store, router)
+	bot, err := robot.NewBot(config["BOT_TOKEN"], config["DYNAMIC_WL"], store, router)
 	if err != nil {
 		log.Fatalln(err)
 	}

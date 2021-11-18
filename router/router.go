@@ -28,7 +28,7 @@ func (rc *Router) AddIP(ip net.IP, comment string) error {
 	}
 	defer conn.Close()
 
-	_, err = conn.Run("/ip/firewall/address-list/add", "=list=WL", "=address="+ip.String(), "=comment="+comment)
+	_, err = conn.Run("/ip/firewall/address-list/add", "=list=WL", "=address="+ip.String(), "=comment=\""+comment+"\"")
 	if err != nil {
 		return err
 	}

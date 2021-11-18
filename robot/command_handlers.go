@@ -29,6 +29,7 @@ func (b *Robot) startCommandHandler(user *storage.User, update *tgbotapi.Update)
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("/"+commandAddIP),
 			tgbotapi.NewKeyboardButton("/"+commandRemoveIP),
+			tgbotapi.NewKeyboardButton("/"+commandShowDynamicLink),
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("/"+commandAddAdmin),
@@ -46,13 +47,13 @@ func (b *Robot) startCommandHandler(user *storage.User, update *tgbotapi.Update)
 func (b *Robot) addAdminCommandHandler(user *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
 	user.Status = statusAddAdmin
 
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter admin username without @ to add")
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя пользователя для добавления в список администраторов.")
 }
 
 func (b *Robot) removeAdminCommandHandler(user *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
 	user.Status = statusRemoveAdmin
 
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "Enter admin username without @ to delete")
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя администратора для удаления из списа администраторов.\nСписок администраторов можно посмотреть по команде /"+commandShowAdmins)
 }
 
 func (b *Robot) ShowAdmins(_ *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
@@ -64,4 +65,14 @@ func (b *Robot) ShowAdmins(_ *storage.User, update *tgbotapi.Update) tgbotapi.Me
 		text = fmt.Sprintf("%s@%s\n", text, admin)
 	}
 	return tgbotapi.NewMessage(update.Message.Chat.ID, text)
+}
+
+func (b *Robot) showDynamicLinkCommandHandler(_ *storage.User, update *tgbotapi.Update) tgbotapi.MessageConfig {
+	msgText := fmt.Sprintf(`На **компьютере**, с которого нужно подключиться, перейдите по [ССЫЛКЕ](%s).
+\n\nОткроется окно в браузере и вы увидите ваш IP, после этого можете подключаться к серверу.`, b.dynamicWL)
+
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
+	msg.ParseMode = tgbotapi.ModeMarkdownV2
+
+	return msg
 }

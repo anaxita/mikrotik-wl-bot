@@ -1,5 +1,7 @@
 package storage
 
+import "strings"
+
 const (
 	anaxitaUsername  = "anaxita"
 	mishaglUsername  = "Mishagl"
@@ -32,9 +34,11 @@ func NewStorage() *Storage {
 }
 
 func (s *Storage) AddAdmin(username string) {
+	username = strings.Replace(username, "@", "", 1)
 	s.Admins[username] = struct{}{}
 }
 
 func (s *Storage) RemoveAdmin(username string) {
+	username = strings.Replace(username, "@", "", 1)
 	delete(s.Admins, username)
 }
