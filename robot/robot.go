@@ -136,6 +136,11 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 				msgText = err.Error()
 			}
 
+			err = b.sendNotification(fmt.Sprintf("Чат: %s\nПользователь: %s %s\nДействие: Добавил IP %s", chatTitle, firstName, lastName, ip))
+			if err != nil {
+				log.Println("Send notification error:", err)
+			}
+
 			user.Status = statusStart
 		}
 	case statusAddAdmin:

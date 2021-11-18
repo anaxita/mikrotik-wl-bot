@@ -6,6 +6,7 @@ const (
 	anaxitaUsername  = "anaxita"
 	mishaglUsername  = "Mishagl"
 	kmsControlChatID = -1001700493413
+	KmsMailChatID    = -1001287143568
 )
 
 type User struct {
@@ -29,7 +30,7 @@ func NewStorage() *Storage {
 			anaxitaUsername: {},
 			mishaglUsername: {},
 		},
-		AllowChatIDs: []int64{kmsControlChatID},
+		AllowChatIDs: []int64{kmsControlChatID, KmsMailChatID},
 	}
 }
 
