@@ -155,7 +155,7 @@ func (b *Robot) handleMessages(update tgbotapi.Update) {
 			break
 		}
 
-		err = b.sendNotification(fmt.Sprintf("Chat: %s\nUser: %s %s\nAction: Удалил IP %s", chatTitle, firstName, lastName, ip))
+		err = b.sendNotification(fmt.Sprintf("Chat: %s\nUser: %s %s\nAction: Добавил IP %s", chatTitle, firstName, lastName, ip))
 		if err != nil {
 			log.Println("Send notification error:", err)
 		}
